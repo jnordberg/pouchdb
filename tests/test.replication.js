@@ -467,6 +467,47 @@ adapters.map(function (adapters) {
       });
     });
 
+    it('test-cancel-pull-replication', function (done) {
+      new PouchDB(dbs.remote, function (err, remote) {
+        var db = new PouchDB(dbs.name);
+        var docs = [
+          {_id: '0', integer: 0, string: '0'},
+          {_id: '1', integer: 1, string: '1'},
+          {_id: '2', integer: 2, string: '2'}
+        ];
+        var doc1 = {_id: 'adoc', foo: 'bar' };
+        var doc2 = {_id: 'anotherdoc', foo: 'baz'};
+        remote.bulkDocs({ docs: docs }, {}, function (err, results) {
+          var count = 0;
+          var replicate = db.replicate.from(remote, {
+            live: true,
+            complete: function () {
+              remote.put(doc2);
+              setTimeout(function () {
+                changes.cancel();
+              }, 100);
+            }
+          });
+          var changes = db.changes({
+            live: true,
+            complete: function (err, reason) {
+              count.should.equal(4);
+              done();
+            },
+            onChange: function (change) {
+              ++count;
+              if (count === 3) {
+                remote.put(doc1);
+              }
+              if (count === 4) {
+                replicate.cancel();
+              }
+            }
+          });
+        });
+      });
+    });
+
     it('Replication filter', function (done) {
       var db = new PouchDB(dbs.name);
       var remote = new PouchDB(dbs.remote);
