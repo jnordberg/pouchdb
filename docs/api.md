@@ -316,7 +316,7 @@ db.changes(options)
 {% endhighlight %}
 
 A list of changes made to documents in the database, in the order they were made.
-If `options.continuous` is set to `true`, it returns an object with one method `cancel` which you call if you don't want to listen to new changes anymore. `options.onChange` will be be called for each change that is encountered.
+If `options.live` is set to `true`, it returns an object with one method `cancel` which you call if you don't want to listen to new changes anymore. `options.onChange` will be be called for each change that is encountered.
 
 ### Options
 
@@ -329,14 +329,14 @@ All options default to `false` unless otherwise specified.
 * `options.filter`: Reference a filter function from a design document to selectively get updates.
 * `options.since`: Start the results from the change immediately after the given sequence number.
 * `options.complete`: Function called when all changes have been processed.
-* `options.continuous`: Use _longpoll_ feed.
-* `options.onChange`: Function called on each change after deduplication (only sends the most recent for each document). Not called as a callback but called as `onChange(change)`. Can also be used with the `continuous` flag.
+* `options.live`: Use _longpoll_ feed.
+* `options.onChange`: Function called on each change after deduplication (only sends the most recent for each document). Not called as a callback but called as `onChange(change)`. Can also be used with the `live` flag.
 
 #### Example Usage:
 {% highlight js %}
 var changes = db.changes({
   since: 20,
-  continuous: true,
+  live: true,
   onChange: function(change) { }
 });
 
@@ -401,7 +401,7 @@ db.changes({complete: function(err, response) { }});
 PouchDB.replicate(source, target, [options])
 {% endhighlight %}
 
-Replicate data from `source` to `target`.  Both the `source` and `target` can be a string representing a CouchDB database url or the name a local PouchDB database. If `options.continuous` is `true`, then this will track future changes and also replicate them automatically.
+Replicate data from `source` to `target`.  Both the `source` and `target` can be a string representing a CouchDB database url or the name a local PouchDB database. If `options.live` is `true`, then this will track future changes and also replicate them automatically.
 
 If you want to sync data in both directions, you can call this twice, reversing the `source` and `target` arguments. Additionally, you can use PouchDB.sync().
 
@@ -414,7 +414,7 @@ All options default to `false` unless otherwise specified.
 * `options.doc_ids`: Only replicate docs with these ids.
 * `options.complete`: Function called when all changes have been processed.
 * `options.onChange`: Function called on each change processed.
-* `options.continuous`: If `true`, starts subscribing to future changes in the `source` database and continue replicating them.
+* `options.live`: If `true`, starts subscribing to future changes in the `source` database and continue replicating them.
 * `options.since`: Replicate changes after the given sequence number.
 * `options.server`: Initialize the replication on the server. The response is the CouchDB `POST _replicate` response and is different from the PouchDB replication response. Also, `options.onChange` is not supported on server replications.
 * `options.create_target`: Create target database if it does not exist. Only for server replications.
