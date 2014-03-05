@@ -1,11 +1,11 @@
 /* global PouchDBVersion110,PouchDBVersion200,PouchDB */
 'use strict';
 
-// scenarios where we migrate from one pouch to another
 var scenarios = [
   ['PouchDB v1.1.0', 'PouchDB'],
   ['PouchDB v2.0.0', 'PouchDB'],
-  ['websql', 'idb']
+  ['websql', 'idb'],
+  ['websql', 'websql']
 ];
 
 describe('migration', function () {
@@ -18,40 +18,42 @@ describe('migration', function () {
 
   scenarios.map(function (scenario) {
 
-    if (scenario[0] === 'websql' && scenario[1] === 'idb' &&
-      !('idb' in PouchDB.adapters && 'websql' in PouchDB.adapters)) {
+    if (scenario.filter(function (pouchType) {
+      var isAdapter = ['websql', 'idb'].indexOf(pouchType) !== -1;
+      return isAdapter && !(pouchType in PouchDB.adapters);
+    }).length) {
       return; // scenario doesn't make sense for this browser
     }
 
-    var suiteName = 'from ' + scenario[0] + ' to ' + scenario[1];
+    var suiteName = 'migrate from ' + scenario[0] + ' to ' + scenario[1];
 
     describe(suiteName, function () {
       var dbs = {
-        first : {},
-        second : {}
       };
 
       beforeEach(function (done) {
         // need actual unique db names for these tests
-        dbs.first.local = dbs.second.local =
-          testUtils.adapterUrl('local', 'test_migration_local');
+        var localName = testUtils.adapterUrl('local', 'test_migration_local');
+        var remoteName = testUtils.adapterUrl('http', 'test_migration_remote');
 
-        dbs.first.remote = dbs.second.remote =
-          testUtils.adapterUrl('http', 'test_migration_remote');
+        var firstLocal = scenario[0] in PouchDB.adapters ?
+          scenario[0] + '://' + localName : localName;
 
-        dbs.first.pouch = constructors[scenario[0]] || PouchDB;
-        dbs.second.pouch = constructors[scenario[1]] || PouchDB;
+        var secondLocal = scenario[1] in PouchDB.adapters ?
+          scenario[1] + '://' + localName : localName;
 
-        if (scenario[0] in PouchDB.adapters) {
-          dbs.first.local = scenario[0] + '://' + dbs.first.local;
-        }
-        if (scenario[1] in PouchDB.adapters) {
-          dbs.second.local = scenario[1] + '://' + dbs.second.local;
-        }
+        dbs.first = {
+          pouch : constructors[scenario[0]] || PouchDB,
+          local : firstLocal,
+          remote : remoteName
+        };
 
-        // modify the preferredAdapters in setup.js, then
-        // uncomment this line to test websql in Chrome
-        // delete PouchDBVersion110.adapters.idb;
+        dbs.second = {
+          pouch : constructors[scenario[1]] || PouchDB,
+          local : secondLocal,
+          remote : remoteName
+        };
+
         testUtils.cleanup([dbs.first.local, dbs.second.local], done);
 
       });
