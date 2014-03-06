@@ -26,6 +26,8 @@
     "inherits": "~2.0.1"
   },
   "devDependencies": {
+    "es5-shim":"~2.3.0",
+    "ua-parser-js":"~0.6.2",
     "commander": "~2.1.0",
     "watchify": "~0.4.1",
     "uglify-js": "~2.4.6",
@@ -46,6 +48,7 @@
     "bower": "~1.2.8"
   },
   "scripts": {
+    "postinstall":"git rev-parse HEAD^1 > tests/deps/pouch-commit.txt",
     "jshint": "jshint -c .jshintrc bin/ lib/ tests/*.js",
     "build-js": "browserify lib/index.js -s PouchDB -o dist/pouchdb-nightly.js",
     "uglify": "uglifyjs dist/pouchdb-nightly.js -mc > dist/pouchdb-nightly.min.js",

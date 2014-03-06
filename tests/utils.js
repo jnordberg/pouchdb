@@ -4,12 +4,22 @@
 
 var testUtils = {};
 
+window.COUCHDB_HOST = 'http://localhost:5984';
+//window.COUCHDB_HOST = 'http://pouchtest:pouchtest@pouchtest.com/couchdb';
+
+function uuid() {
+  var S4 = function () {
+    return Math.floor(Math.random() * 65536).toString(16);
+  };
+  return S4() + S4() + '-' + S4() + '-' + S4() + '-' + S4() + '-' + S4() + S4() + S4();
+}
+
 testUtils.couchHost = function () {
   if (typeof module !== 'undefined' && module.exports) {
     return process.env.COUCH_HOST || 'http://localhost:5984';
   }
   // In the browser we default to the CORS server, in future will change
-  return 'http://localhost:2020';
+  return window.COUCHDB_HOST;
 };
 
 testUtils.makeBlob = function (data, type) {
@@ -49,7 +59,7 @@ testUtils.base64Blob = function (blob, callback) {
 // node adapter ones with a db location
 testUtils.adapterUrl = function (adapter, name) {
   if (adapter === 'http') {
-    return testUtils.couchHost() + '/' + name;
+    return testUtils.couchHost() + '/testdb' + name + '-' + uuid();
   }
   return typeof process === 'undefined' ? name : PouchDB.prefix + name;
 };
